@@ -169,7 +169,7 @@ function drawBlock(context, x, y, colorIndex, size, alpha) {
 }
 
 function drawGrid() {
-  ctx.strokeStyle = '#22222e';
+  ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--grid').trim();
   ctx.lineWidth = 0.5;
   for (let c = 1; c < COLS; c++) {
     ctx.beginPath();
@@ -300,5 +300,29 @@ document.addEventListener('keydown', e => {
 });
 
 restartBtn.addEventListener('click', init);
+
+const themeToggle = document.getElementById('theme-toggle');
+const THEME_KEY = 'tetris-theme';
+
+function applyTheme(theme) {
+  const light = theme === 'light';
+  document.documentElement.dataset.theme = light ? 'light' : 'dark';
+  themeToggle.setAttribute('aria-pressed', String(light));
+  themeToggle.textContent = light ? '🌙 Modo oscuro' : '☀️ Modo claro';
+}
+
+themeToggle.addEventListener('click', () => {
+  const light = document.documentElement.dataset.theme !== 'light';
+  applyTheme(light ? 'light' : 'dark');
+  try { localStorage.setItem(THEME_KEY, light ? 'light' : 'dark'); } catch (e) { /* ignorar */ }
+  themeToggle.blur(); // evita que Space reactive el botón
+  // repintar aunque el juego esté en pausa o terminado
+  draw();
+  drawNext();
+});
+
+let savedTheme = 'dark';
+try { savedTheme = localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark'; } catch (e) { /* ignorar */ }
+applyTheme(savedTheme);
 
 init();
