@@ -79,7 +79,18 @@ jobs:
                `gh issue edit ${{ github.event.issue.number }} --add-label "..." --remove-label "..."`.
 
             4. Redacta el diagnóstico en `/tmp/triage.md`. La PRIMERA línea debe ser exactamente
-               `<!-- claude-triage -->`. Estructura:
+               `<!-- claude-triage -->`.
+               Todo lo que escribas debe estar en Markdown compatible con GitHub (GitHub Flavored
+               Markdown) para que se renderice correctamente en el comentario:
+               - Encabezados con `##`/`###`, listas con `-` o `1.`, **negritas** y _cursivas_.
+               - Referencias a archivos, funciones y labels entre comillas invertidas (`game.js:123`).
+               - Fragmentos de código en bloques con triple comilla invertida y lenguaje
+                 (```js … ```), nunca indentados con espacios.
+               - Tablas GFM (`| col | col |`) si ayudan; checklists `- [ ]` para los criterios de aceptación.
+               - Deja una línea en blanco entre párrafos, encabezados, listas y bloques de código.
+               - No envuelvas el comentario completo en un bloque de código ni uses HTML salvo el
+                 marcador `<!-- claude-triage -->`.
+               Estructura:
 
                ## 🔍 Diagnóstico automático (Claude)
                ### Resumen
