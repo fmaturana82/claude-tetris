@@ -22,7 +22,7 @@ To check a change, reload the page in a browser. There are no automated tests.
 - `style.css` holds the dark/retro styling. Hiding the overlay depends on the `.hidden` class.
 
 Key mechanics in `game.js`:
-- **Board model:** a `ROWS × COLS` matrix. Each cell is `0` (empty) or a piece type index 1–7, which also indexes `COLORS` and `PIECES`. Both arrays have `null` at index 0, so piece types and color indices stay aligned. Change them together.
+- **Board model:** a `ROWS × COLS` matrix. Each cell is `0` (empty) or a piece type index 1–8 (8 is the 3×3 "tuerca" challenge piece with an empty center), which also indexes `COLORS` and `PIECES`. Both arrays have `null` at index 0, so piece types and color indices stay aligned. Change them together.
 - **Pieces** are square matrices whose cells hold the piece's own type number. `rotateCW` does a transpose plus row reverse. `tryRotate` tries the column kicks `[0, -1, 1, -2, 2]`. These are simple kicks, not SRS.
 - **`collide(shape, x, y)`** is the single validity check used for movement, rotation, gravity, the ghost piece and spawn. Cells above the board (`y < 0`) are allowed.
 - **Flow:** `loop` (requestAnimationFrame) builds up `dropAccum` until it reaches `dropInterval`, then moves the piece down or calls `lockPiece()`. `lockPiece()` runs `merge()`, then `clearLines()`, then `spawn()`. If `spawn()` collides immediately, it calls `endGame()`.
