@@ -17,6 +17,7 @@ Implementación del clásico **Tetris** en JavaScript vanilla, usando HTML5 Canv
     - [Opción 1: abrir el archivo directamente](#opción-1-abrir-el-archivo-directamente)
     - [Opción 2: servidor local (recomendado)](#opción-2-servidor-local-recomendado)
   - [Controles](#controles)
+  - [Tabla de récords](#tabla-de-récords)
   - [Cómo funciona](#cómo-funciona)
     - [1. `index.html`](#1-indexhtml)
     - [2. `style.css`](#2-stylecss)
@@ -42,6 +43,7 @@ Es una versión jugable del Tetris clásico con todas las mecánicas que esperar
 - **Sistema de puntuación** clásico de Tetris (100 / 300 / 500 / 800 multiplicado por nivel).
 - **Niveles** que aumentan cada 10 líneas y aceleran la caída.
 - **Pausa** y **Game Over** con opción de reinicio.
+- **Tabla de récords local**: top 5 puntuaciones con nombre del jugador, mejor combo y máximo de líneas, guardados en `localStorage`.
 
 ---
 
@@ -87,6 +89,16 @@ Después abre `http://localhost:8000` en el navegador.
 | `P`       | Pausar / reanudar                 |
 
 El botón **☀️ Modo claro / 🌙 Modo oscuro** (esquina superior derecha) alterna el tema. Por defecto el juego inicia en modo oscuro; la elección se guarda en `localStorage`.
+
+---
+
+## Tabla de récords
+
+- Al abrir el juego aparece una **pantalla de inicio** con el top 5, el **mejor combo** y el **máximo de líneas** logrados. La partida empieza al pulsar **Jugar**.
+- Al terminar una partida, si la puntuación entra en el top 5 (y es mayor que 0) se pide un **nombre** (máx. 12 caracteres; se recuerda el último usado). Se guarda con **Guardar** o `Enter`, y la nueva fila aparece **resaltada** en la tabla del Game Over.
+- Un **combo** es una racha de piezas consecutivas que eliminan al menos una línea; se corta cuando una pieza se fija sin limpiar nada. El mejor combo y el máximo de líneas se actualizan en cada Game Over, aunque la puntuación no entre en el top.
+- El botón **Borrar récords** (con confirmación) reinicia la tabla y las estadísticas.
+- Los datos se guardan en `localStorage` bajo la clave `tetris-records` (el último nombre en `tetris-last-name`). Si los datos están corruptos se ignoran y se usan valores vacíos.
 
 ---
 
