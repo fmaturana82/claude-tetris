@@ -84,7 +84,16 @@ Después abre `http://localhost:8000` en el navegador.
 | `↑` o `X` | Rotar la pieza en sentido horario |
 | `↓`       | Soft drop (bajar más rápido)      |
 | `Espacio` | Hard drop (caída instantánea)     |
-| `P`       | Pausar / reanudar                 |
+| `P` / `Esc` | Abrir / cerrar el menú de pausa |
+
+El **menú de pausa** ofrece:
+
+- **Reanudar**: vuelve a la partida (también con `P` o `Esc`).
+- **Reiniciar**: empieza una partida nueva con el nivel inicial elegido.
+- **Ver controles**: muestra la lista de teclas dentro del menú.
+- **Nivel inicial** (1–15): se aplica a la próxima partida (o al pulsar Reiniciar) y se guarda en `localStorage`. La velocidad parte de ese nivel y el nivel sigue subiendo cada 10 líneas: `max(nivelInicial, floor(líneas / 10) + 1)`.
+
+Mientras el menú está abierto, las teclas del juego quedan bloqueadas; al reanudar, las teclas que siguieran pulsadas se ignoran hasta soltarlas.
 
 El botón **☀️ Modo claro / 🌙 Modo oscuro** (esquina superior derecha) alterna el tema. Por defecto el juego inicia en modo oscuro; la elección se guarda en `localStorage`.
 
@@ -100,7 +109,7 @@ Define la estructura visual:
 
 - Un `<canvas id="board">` de **300 × 600** píxeles donde se renderiza el tablero.
 - Un panel lateral con `SCORE`, `LINES`, `LEVEL`, vista de la siguiente pieza y la lista de controles.
-- Un overlay para los estados **PAUSA** y **GAME OVER**.
+- Un overlay para **GAME OVER** y un menú de pausa (`#pause-menu`) independiente.
 
 ### 2. `style.css`
 

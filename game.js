@@ -106,7 +106,7 @@ function clearLines() {
   if (cleared) {
     lines += cleared;
     score += (LINE_SCORES[cleared] || 0) * level;
-    level = Math.floor(lines / 10) + 1;
+    level = Math.max(gameStartLevel, Math.floor(lines / 10) + 1);
     dropInterval = Math.max(100, 1000 - (level - 1) * 90);
     updateHUD();
   }
@@ -230,13 +230,12 @@ function togglePause() {
   if (gameOver) return;
   paused = !paused;
   if (!paused) {
+    closePauseMenu();
     lastTime = performance.now();
     loop(lastTime);
   } else {
     cancelAnimationFrame(animId);
-    overlayTitle.textContent = 'PAUSA';
-    overlayScore.textContent = '';
-    overlay.classList.remove('hidden');
+    openPauseMenu();
   }
 }
 
@@ -262,16 +261,18 @@ function init() {
   board = createBoard();
   score = 0;
   lines = 0;
-  level = 1;
+  gameStartLevel = startLevel;
+  level = gameStartLevel;
   paused = false;
   gameOver = false;
-  dropInterval = 1000;
+  dropInterval = Math.max(100, 1000 - (level - 1) * 90);
   dropAccum = 0;
   lastTime = performance.now();
   next = randomPiece();
   spawn();
   updateHUD();
   overlay.classList.add('hidden');
+  pauseMenu.classList.add('hidden');
   cancelAnimationFrame(animId);
   animId = requestAnimationFrame(loop);
 }
@@ -326,5 +327,115 @@ themeToggle.addEventListener('click', () => {
 let savedTheme = 'dark';
 try { savedTheme = localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark'; } catch (e) { /* ignorar */ }
 applyTheme(savedTheme);
+
+// ---- Menú de pausa ----
+const pauseMenu = document.getElementById('pause-menu');
+const pauseResumeBtn = document.getElementById('pause-resume');
+const pauseRestartBtn = document.getElementById('pause-restart');
+const pauseControlsBtn = document.getElementById('pause-controls-btn');
+const pauseControls = document.getElementById('pause-controls');
+const startLevelSelect = document.getElementById('start-level');
+const START_LEVEL_KEY = 'tetris-start-level';
+const MAX_START_LEVEL = 15;
+
+let startLevel = 1;      // nivel elegido en el menú (para la próxima partida)
+let gameStartLevel = 1;  // nivel con el que empezó la partida actual
+const keysDown = new Set();    // teclas físicamente pulsadas
+let ignoredKeys = new Set();   // teclas mantenidas al reanudar: se ignoran hasta soltarlas
+
+function clampLevel(n) {
+  const v = parseInt(n, 10);
+  return Number.isFinite(v) ? Math.min(MAX_START_LEVEL, Math.max(1, v)) : 1;
+}
+
+try { startLevel = clampLevel(localStorage.getItem(START_LEVEL_KEY)); } catch (e) { /* ignorar */ }
+
+for (let i = 1; i <= MAX_START_LEVEL; i++) {
+  const opt = document.createElement('option');
+  opt.value = String(i);
+  opt.textContent = String(i);
+  startLevelSelect.appendChild(opt);
+}
+startLevelSelect.value = String(startLevel);
+
+function openPauseMenu() {
+  pauseControls.classList.add('hidden');
+  pauseControlsBtn.setAttribute('aria-expanded', 'false');
+  pauseControlsBtn.textContent = 'Ver controles';
+  pauseMenu.classList.remove('hidden');
+}
+
+function closePauseMenu() {
+  if (pauseMenu.contains(document.activeElement)) document.activeElement.blur();
+  pauseMenu.classList.add('hidden');
+  // las teclas que siguen pulsadas no deben actuar en el juego al reanudar
+  ignoredKeys = new Set(keysDown);
+}
+
+pauseResumeBtn.addEventListener('click', () => {
+  pauseResumeBtn.blur();
+  if (paused) togglePause();
+});
+
+pauseRestartBtn.addEventListener('click', () => {
+  pauseRestartBtn.blur();
+  ignoredKeys = new Set(keysDown);
+  init();
+});
+
+pauseControlsBtn.addEventListener('click', () => {
+  const show = pauseControls.classList.toggle('hidden') === false;
+  pauseControlsBtn.setAttribute('aria-expanded', String(show));
+  pauseControlsBtn.textContent = show ? 'Ocultar controles' : 'Ver controles';
+  pauseControlsBtn.blur();
+});
+
+startLevelSelect.addEventListener('change', () => {
+  startLevel = clampLevel(startLevelSelect.value);
+  try { localStorage.setItem(START_LEVEL_KEY, String(startLevel)); } catch (e) { /* ignorar */ }
+});
+
+function isTextField(el) {
+  return !!el && (el.isContentEditable || el.tagName === 'TEXTAREA' ||
+    (el.tagName === 'INPUT' && !['button', 'checkbox', 'radio', 'range', 'submit'].includes(el.type)));
+}
+
+// Se registra en fase de captura sobre window: se ejecuta antes que el
+// manejador de teclas del juego (en document) y puede detener el evento.
+window.addEventListener('keydown', e => {
+  keysDown.add(e.code);
+  if (isTextField(e.target)) return;
+
+  if (ignoredKeys.has(e.code)) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    return;
+  }
+
+  if (e.code === 'KeyP' || e.code === 'Escape') {
+    if (gameOver) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    if (!e.repeat) togglePause();
+    return;
+  }
+
+  if (paused) {
+    // con el menú abierto ninguna tecla llega al juego; Space/Enter solo
+    // actúan sobre el control del menú que tenga el foco
+    e.stopImmediatePropagation();
+  }
+}, true);
+
+window.addEventListener('keyup', e => {
+  keysDown.delete(e.code);
+  ignoredKeys.delete(e.code);
+}, true);
+
+window.addEventListener('blur', () => {
+  // al perder el foco no recibiremos los keyup
+  keysDown.clear();
+  ignoredKeys.clear();
+});
 
 init();
