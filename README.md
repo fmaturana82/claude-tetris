@@ -88,6 +88,17 @@ Después abre `http://localhost:8000` en el navegador.
 
 El botón **☀️ Modo claro / 🌙 Modo oscuro** (esquina superior derecha) alterna el tema. Por defecto el juego inicia en modo oscuro; la elección se guarda en `localStorage`.
 
+El selector **SKIN** del panel lateral cambia el aspecto del tablero al instante, sin recargar:
+
+| Skin          | Aspecto                                                                  |
+| ------------- | ------------------------------------------------------------------------ |
+| **Retro**     | Bloques cuadrados de color plano con franja de brillo (estilo original). |
+| **Neón**      | Fondo negro y bloques con resplandor (`shadowBlur` del canvas).          |
+| **Pastel**    | Colores suaves y bloques con bordes redondeados.                         |
+| **Pixel art** | Textura de tramado con bordes de luz y sombra pixelados.                 |
+
+La skin elegida se guarda en `localStorage` (clave `tetris-skin`). La skin controla el tablero y la vista previa; el modo claro/oscuro sigue controlando el resto de la página (con **Retro**, el fondo del tablero también sigue al tema).
+
 ---
 
 ## Cómo funciona
@@ -119,6 +130,7 @@ Contiene toda la lógica del juego. A grandes rasgos:
 - **Puntuación**: usa la tabla clásica `[0, 100, 300, 500, 800]` multiplicada por el nivel actual; el hard drop suma 2 puntos por celda recorrida y el soft drop 1 punto por fila.
 - **Nivel y velocidad**: el nivel sube cada 10 líneas; la velocidad de caída se calcula como `max(100, 1000 − (level − 1) × 90)` milisegundos.
 - **Ghost piece** (`ghostY`): proyecta la posición final de la pieza actual hacia abajo y la dibuja con `globalAlpha = 0.2`.
+- **Skins** (`SKINS`): registro `{ retro, neon, pastel, pixel }`; cada skin define `colors`, `boardBg`, `grid` y su propia función `drawBlock`. `drawBlock(context, x, y, colorIndex, size, alpha)` delega en la skin activa y `applySkin()` cambia `COLORS` y el fondo de los canvas.
 
 ### Flujo del juego
 
@@ -175,7 +187,7 @@ Algunos parámetros fáciles de tunear en `game.js`:
 | `COLS`         | Columnas del tablero                     | `10`                  |
 | `ROWS`         | Filas del tablero                        | `20`                  |
 | `BLOCK`        | Tamaño en píxeles de cada celda          | `30`                  |
-| `COLORS`       | Paleta de colores por tipo de pieza      | 7 colores             |
+| `SKINS`        | Skins: paleta, fondo, cuadrícula y dibujo de bloques (`COLORS` apunta a la paleta de la skin activa) | `retro` |
 | `LINE_SCORES`  | Puntos por 1, 2, 3 o 4 líneas eliminadas | `[0,100,300,500,800]` |
 | `dropInterval` | Velocidad inicial de caída en ms         | `1000`                |
 
